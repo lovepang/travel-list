@@ -14,210 +14,132 @@
         body {
             font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
             background-color: var(--bg-color);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
         }
-        h1 { color: #333; margin-bottom: 30px; }
+        .header { text-align: center; margin-bottom: 30px; width: 100%; max-width: 600px; }
+        .user-badge { background: #333; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.9rem; }
+        
+        /* 進度條樣式 */
+        .progress-container {
+            width: 100%; background-color: #ddd; border-radius: 10px; margin: 15px 0; height: 20px; position: relative;
+        }
+        .progress-bar {
+            width: 0%; height: 100%; background-color: #4caf50; border-radius: 10px; transition: width 0.3s;
+        }
+        .progress-text { position: absolute; width: 100%; text-align: center; font-size: 0.8rem; line-height: 20px; color: #000; font-weight: bold; }
+
         .container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            width: 100%;
-            max-width: 1200px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px; width: 100%; max-width: 1200px;
         }
-        .category-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .category-card h2 {
-            font-size: 1.2rem;
-            color: var(--primary-color);
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 10px;
-            margin-top: 0;
-        }
-        .input-group {
-            display: flex;
-            margin-bottom: 15px;
-            gap: 5px;
-        }
-        input[type="text"] {
-            flex: 1;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        button.add-btn {
-            padding: 8px 15px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button.add-btn:active { transform: scale(0.98); }
+        .category-card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .input-group { display: flex; margin-bottom: 15px; gap: 5px; }
+        input[type="text"] { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button.add-btn { padding: 8px 15px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer; }
         ul { list-style: none; padding: 0; }
-        li {
-            display: flex;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px dashed #eee;
-        }
-        li label {
-            flex: 1;
-            cursor: pointer;
-            margin-left: 8px;
-        }
-        .delete-btn {
-            color: #ff4d4f;
-            cursor: pointer;
-            font-weight: bold;
-            padding: 0 5px;
-            margin-left: 10px;
-        }
-        /* 勾選後的樣式 */
-        .checked-text {
-            text-decoration: line-through;
-            color: #888;
-        }
+        li { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px dashed #eee; }
+        .delete-btn { color: #ff4d4f; cursor: pointer; margin-left: 10px; font-weight: bold; }
+        .checked-text { text-decoration: line-through; color: #888; }
     </style>
 </head>
 <body>
 
-    <h1>🌍 旅遊雲端打包清單</h1>
+    <div class="header">
+        <h1>🌍 旅遊打包清單 <span id="display-user" class="user-badge">載入中...</span></h1>
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+            <div class="progress-text" id="progress-percent">總體進度: 0%</div>
+        </div>
+        <p>切換使用者：<a href="?user=Tony">Tony</a> | <a href="?user=Amy">Amy</a></p>
+    </div>
 
     <div class="container">
-        <div class="category-card">
-            <h2>1. 重要文件與金融</h2>
-            <div class="input-group">
-                <input type="text" placeholder="新增項目..." id="input-list-1" onkeypress="handleKeyPress(event, 'list-1')">
-                <button class="add-btn" onclick="addItem('list-1')">新增</button>
-            </div>
-            <ul id="list-1"></ul>
-        </div>
-
-        <div class="category-card">
-            <h2>2. 衣物</h2>
-            <div class="input-group">
-                <input type="text" placeholder="新增項目..." id="input-list-2" onkeypress="handleKeyPress(event, 'list-2')">
-                <button class="add-btn" onclick="addItem('list-2')">新增</button>
-            </div>
-            <ul id="list-2"></ul>
-        </div>
-
-        <div class="category-card">
-            <h2>3. 個人護理與藥品</h2>
-            <div class="input-group">
-                <input type="text" placeholder="新增項目..." id="input-list-3" onkeypress="handleKeyPress(event, 'list-3')">
-                <button class="add-btn" onclick="addItem('list-3')">新增</button>
-            </div>
-            <ul id="list-3"></ul>
-        </div>
-
-        <div class="category-card">
-            <h2>4. 數位電子與雜項</h2>
-            <div class="input-group">
-                <input type="text" placeholder="新增項目..." id="input-list-4" onkeypress="handleKeyPress(event, 'list-4')">
-                <button class="add-btn" onclick="addItem('list-4')">新增</button>
-            </div>
-            <ul id="list-4"></ul>
-        </div>
+        <div class="category-card"><h2>1. 重要文件與金融</h2><div class="input-group"><input type="text" id="input-list-1"><button class="add-btn" onclick="addItem('list-1')">新增</button></div><ul id="list-1"></ul></div>
+        <div class="category-card"><h2>2. 衣物</h2><div class="input-group"><input type="text" id="input-list-2"><button class="add-btn" onclick="addItem('list-2')">新增</button></div><ul id="list-2"></ul></div>
+        <div class="category-card"><h2>3. 個人護理與藥品</h2><div class="input-group"><input type="text" id="input-list-3"><button class="add-btn" onclick="addItem('list-3')">新增</button></div><ul id="list-3"></ul></div>
+        <div class="category-card"><h2>4. 數位電子與雜項</h2><div class="input-group"><input type="text" id="input-list-4"><button class="add-btn" onclick="addItem('list-4')">新增</button></div><ul id="list-4"></ul></div>
     </div>
 
     <script>
-        // --- 1. Supabase 初始化設定 ---
-        const SUPABASE_URL = 'https://kxxoeebaldjusbberimg.supabase.co'; // 請替換
-        const SUPABASE_KEY = 'sb_publishable_y4SlLCg7DR5AnBzEkNUS-A_vIynlv5C'; // 請替換
+        const SUPABASE_URL = 'https://kxxoeebaldjusbberimg.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_y4SlLCg7DR5AnBzEkNUS-A_vIynlv5C';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- 2. 網頁開啟時讀取資料 ---
-        window.onload = async () => {
+        // 從網址讀取使用者 (?user=Tony)，預設為 Tony
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentUser = urlParams.get('user') || 'Tony';
+        document.getElementById('display-user').innerText = currentUser;
+
+        window.onload = loadData;
+
+        async function loadData() {
+            // 清空畫面
+            document.querySelectorAll('ul').forEach(el => el.innerHTML = '');
+            
             const { data, error } = await _supabase
                 .from('travel_items')
                 .select('*')
+                .eq('user_name', currentUser) // 關鍵：只抓取目前使用者的資料
                 .order('id', { ascending: true });
 
-            if (error) console.error('讀取失敗:', error);
             if (data) {
-                data.forEach(item => {
-                    renderItemUI(item.category, item.content, item.is_checked, item.id);
-                });
+                data.forEach(item => renderItemUI(item.category, item.content, item.is_checked, item.id));
+                updateProgress();
             }
-        };
+        }
 
-        // --- 3. 新增邏輯 ---
         async function addItem(listId) {
             const input = document.getElementById('input-' + listId);
             const text = input.value.trim();
-            if (text === "") return;
+            if (!text) return;
 
-            // 存入 Supabase
             const { data, error } = await _supabase
                 .from('travel_items')
-                .insert([{ category: listId, content: text, is_checked: false }])
+                .insert([{ category: listId, content: text, is_checked: false, user_name: currentUser }])
                 .select();
 
-            if (error) {
-                alert('新增失敗，請檢查資料表設定');
-                console.error(error);
-            } else {
+            if (data) {
                 renderItemUI(listId, text, false, data[0].id);
                 input.value = "";
+                updateProgress();
             }
         }
 
-        // --- 4. 更新勾選狀態 ---
         async function toggleCheck(id, isChecked) {
             const label = document.querySelector(`label[for="item-${id}"]`);
-            if (isChecked) {
-                label.classList.add('checked-text');
-            } else {
-                label.classList.remove('checked-text');
-            }
+            isChecked ? label.classList.add('checked-text') : label.classList.remove('checked-text');
 
-            const { error } = await _supabase
-                .from('travel_items')
-                .update({ is_checked: isChecked })
-                .eq('id', id);
-            
-            if (error) console.error('更新失敗:', error);
+            await _supabase.from('travel_items').update({ is_checked: isChecked }).eq('id', id);
+            updateProgress();
         }
 
-        // --- 5. 刪除邏輯 ---
         async function deleteItem(id, element) {
-            const { error } = await _supabase
-                .from('travel_items')
-                .delete()
-                .eq('id', id);
-
+            const { error } = await _supabase.from('travel_items').delete().eq('id', id);
             if (!error) {
                 element.parentElement.remove();
-            } else {
-                console.error('刪除失敗:', error);
+                updateProgress();
             }
         }
 
-        // --- 輔助：渲染畫面 ---
+        function updateProgress() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const checked = document.querySelectorAll('input[type="checkbox"]:checked');
+            const percent = checkboxes.length === 0 ? 0 : Math.round((checked.length / checkboxes.length) * 100);
+            
+            document.getElementById('progress-bar').style.width = percent + '%';
+            document.getElementById('progress-percent').innerText = `總體進度: ${percent}% (${checked.length}/${checkboxes.length})`;
+        }
+
         function renderItemUI(listId, text, isChecked, id) {
             const list = document.getElementById(listId);
             const li = document.createElement('li');
-            
             li.innerHTML = `
-                <input type="checkbox" id="item-${id}" ${isChecked ? 'checked' : ''} 
-                       onchange="toggleCheck(${id}, this.checked)">
+                <input type="checkbox" id="item-${id}" ${isChecked ? 'checked' : ''} onchange="toggleCheck(${id}, this.checked)">
                 <label for="item-${id}" class="${isChecked ? 'checked-text' : ''}">${text}</label>
                 <span class="delete-btn" onclick="deleteItem(${id}, this)">×</span>
             `;
             list.appendChild(li);
-        }
-
-        function handleKeyPress(event, listId) {
-            if (event.key === "Enter") addItem(listId);
         }
     </script>
 </body>
