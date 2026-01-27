@@ -3,62 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>旅遊雲端打包清單</title>
+    <title>小清新旅遊助手</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
+
         :root {
-            --primary-color: #4a90e2;
-            --bg-color: #f4f7f6;
-            --card-bg: #ffffff;
+            --primary-color: #76b5c5; /* 輕盈藍 */
+            --accent-color: #e28743;  /* 活力橘 */
+            --bg-color: #f0f4f8;      /* 淡淡的天藍灰 */
+            --card-bg: rgba(255, 255, 255, 0.9);
         }
+
         body {
-            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
-            background-color: var(--bg-color);
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #e0f2f1 0%, #f1f8e9 100%);
             margin: 0; padding: 20px;
-            display: flex; flex-direction: column; align-items: center;
+            color: #444; min-height: 100vh;
         }
-        .header { text-align: center; margin-bottom: 30px; width: 100%; max-width: 600px; }
-        .user-badge { background: #333; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.9rem; }
-        
-        /* 進度條樣式 */
+
+        .header {
+            text-align: center; max-width: 800px; margin: 0 auto 20px;
+            background: var(--card-bg); padding: 30px; border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        /* 1. 使用者字型醒目設計 */
+        #display-user {
+            font-size: 2.5rem; color: var(--primary-color);
+            font-weight: 700; display: block; margin: 10px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: 2px;
+        }
+
+        /* 3. 下拉式選單樣式 */
+        .user-select {
+            padding: 8px 15px; border-radius: 20px; border: 1px solid var(--primary-color);
+            background: white; color: var(--primary-color); font-weight: bold; cursor: pointer;
+        }
+
+        /* 進度條 */
         .progress-container {
-            width: 100%; background-color: #ddd; border-radius: 10px; margin: 15px 0; height: 20px; position: relative;
+            width: 100%; background: #eee; border-radius: 15px; height: 12px; margin: 20px 0; overflow: hidden;
         }
         .progress-bar {
-            width: 0%; height: 100%; background-color: #4caf50; border-radius: 10px; transition: width 0.3s;
+            width: 0%; height: 100%; background: linear-gradient(90deg, #76b5c5, #8ecae6); transition: width 0.5s ease;
         }
-        .progress-text { position: absolute; width: 100%; text-align: center; font-size: 0.8rem; line-height: 20px; color: #000; font-weight: bold; }
 
+        /* 5. 天氣搜尋區塊 */
+        .weather-section {
+            background: #fff; padding: 15px; border-radius: 15px; margin-bottom: 25px;
+            border-left: 5px solid var(--primary-color); text-align: left;
+        }
+        .search-group { display: flex; gap: 10px; margin-bottom: 10px; }
+        .search-group input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
+        #weather-result { font-size: 0.9rem; line-height: 1.6; color: #555; }
+
+        /* 卡片佈局 */
         .container {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px; width: 100%; max-width: 1200px;
+            gap: 20px; width: 100%; max-width: 1200px; margin: 0 auto;
         }
-        .category-card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .input-group { display: flex; margin-bottom: 15px; gap: 5px; }
-        input[type="text"] { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
-        button.add-btn { padding: 8px 15px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .category-card {
+            background: var(--card-bg); border-radius: 15px; padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.8);
+            backdrop-filter: blur(5px);
+        }
+        .category-card h2 { color: var(--primary-color); font-size: 1.2rem; margin-top: 0; display: flex; align-items: center; }
+        .category-card h2::before { content: '✈️'; margin-right: 8px; }
+
+        .input-group { display: flex; gap: 5px; margin-bottom: 15px; }
+        input[type="text"] { flex: 1; padding: 8px; border: 1px solid #eee; border-radius: 5px; }
+        .add-btn { background: var(--primary-color); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
+        
         ul { list-style: none; padding: 0; }
-        li { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px dashed #eee; }
-        .delete-btn { color: #ff4d4f; cursor: pointer; margin-left: 10px; font-weight: bold; }
-        .checked-text { text-decoration: line-through; color: #888; }
+        li { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #f9f9f9; transition: 0.2s; }
+        li:hover { background: rgba(118, 181, 197, 0.05); }
+        .delete-btn { color: #ccc; cursor: pointer; margin-left: auto; transition: 0.2s; }
+        .delete-btn:hover { color: #ff4d4f; }
+        .checked-text { text-decoration: line-through; color: #bbb; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>🌍 旅遊打包清單 <span id="display-user" class="user-badge">載入中...</span></h1>
+        <span id="display-user">Tony</span>
+        <h1>旅遊打包清單</h1>
+        
+        <select class="user-select" onchange="switchUser(this.value)" id="user-dropdown">
+            <option value="Tony">我是 Tony</option>
+            <option value="Amy">我是 Amy</option>
+        </select>
+
         <div class="progress-container">
             <div class="progress-bar" id="progress-bar"></div>
-            <div class="progress-text" id="progress-percent">總體進度: 0%</div>
         </div>
-        <p>切換使用者：<a href="?user=Tony">Tony</a> | <a href="?user=Amy">Amy</a></p>
+        <div id="progress-percent" style="font-size: 0.9rem; color: #888;">進度：0%</div>
+
+        <div class="weather-section">
+            <div class="search-group">
+                <input type="text" id="city-input" placeholder="輸入目的地城市 (如: Tokyo, Paris)">
+                <button class="add-btn" onclick="getWeather()">查詢天氣</button>
+            </div>
+            <div id="weather-result">輸入城市後，我會告訴你未來一週的天氣與穿著建議喔！</div>
+        </div>
     </div>
 
     <div class="container">
-        <div class="category-card"><h2>1. 重要文件與金融</h2><div class="input-group"><input type="text" id="input-list-1"><button class="add-btn" onclick="addItem('list-1')">新增</button></div><ul id="list-1"></ul></div>
-        <div class="category-card"><h2>2. 衣物</h2><div class="input-group"><input type="text" id="input-list-2"><button class="add-btn" onclick="addItem('list-2')">新增</button></div><ul id="list-2"></ul></div>
-        <div class="category-card"><h2>3. 個人護理與藥品</h2><div class="input-group"><input type="text" id="input-list-3"><button class="add-btn" onclick="addItem('list-3')">新增</button></div><ul id="list-3"></ul></div>
-        <div class="category-card"><h2>4. 數位電子與雜項</h2><div class="input-group"><input type="text" id="input-list-4"><button class="add-btn" onclick="addItem('list-4')">新增</button></div><ul id="list-4"></ul></div>
+        <div class="category-card"><h2>重要文件與金融</h2><div class="input-group"><input type="text" id="input-list-1"><button class="add-btn" onclick="addItem('list-1')">新增</button></div><ul id="list-1"></ul></div>
+        <div class="category-card"><h2>衣物</h2><div class="input-group"><input type="text" id="input-list-2"><button class="add-btn" onclick="addItem('list-2')">新增</button></div><ul id="list-2"></ul></div>
+        <div class="category-card"><h2>個人護理與藥品</h2><div class="input-group"><input type="text" id="input-list-3"><button class="add-btn" onclick="addItem('list-3')">新增</button></div><ul id="list-3"></ul></div>
+        <div class="category-card"><h2>數位電子與雜項</h2><div class="input-group"><input type="text" id="input-list-4"><button class="add-btn" onclick="addItem('list-4')">新增</button></div><ul id="list-4"></ul></div>
+        <div class="category-card"><h2>當地採購清單</h2><div class="input-group"><input type="text" id="input-list-5"><button class="add-btn" onclick="addItem('list-5')">新增</button></div><ul id="list-5"></ul></div>
     </div>
 
     <script>
@@ -66,23 +122,20 @@
         const SUPABASE_KEY = 'sb_publishable_y4SlLCg7DR5AnBzEkNUS-A_vIynlv5C';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 從網址讀取使用者 (?user=Tony)，預設為 Tony
         const urlParams = new URLSearchParams(window.location.search);
         const currentUser = urlParams.get('user') || 'Tony';
         document.getElementById('display-user').innerText = currentUser;
+        document.getElementById('user-dropdown').value = currentUser;
 
         window.onload = loadData;
 
-        async function loadData() {
-            // 清空畫面
-            document.querySelectorAll('ul').forEach(el => el.innerHTML = '');
-            
-            const { data, error } = await _supabase
-                .from('travel_items')
-                .select('*')
-                .eq('user_name', currentUser) // 關鍵：只抓取目前使用者的資料
-                .order('id', { ascending: true });
+        function switchUser(val) {
+            window.location.href = `?user=${val}`;
+        }
 
+        async function loadData() {
+            document.querySelectorAll('ul').forEach(el => el.innerHTML = '');
+            const { data } = await _supabase.from('travel_items').select('*').eq('user_name', currentUser).order('id', { ascending: true });
             if (data) {
                 data.forEach(item => renderItemUI(item.category, item.content, item.is_checked, item.id));
                 updateProgress();
@@ -93,53 +146,70 @@
             const input = document.getElementById('input-' + listId);
             const text = input.value.trim();
             if (!text) return;
-
-            const { data, error } = await _supabase
-                .from('travel_items')
-                .insert([{ category: listId, content: text, is_checked: false, user_name: currentUser }])
-                .select();
-
-            if (data) {
-                renderItemUI(listId, text, false, data[0].id);
-                input.value = "";
-                updateProgress();
-            }
+            const { data } = await _supabase.from('travel_items').insert([{ category: listId, content: text, is_checked: false, user_name: currentUser }]).select();
+            if (data) { renderItemUI(listId, text, false, data[0].id); input.value = ""; updateProgress(); }
         }
 
         async function toggleCheck(id, isChecked) {
             const label = document.querySelector(`label[for="item-${id}"]`);
             isChecked ? label.classList.add('checked-text') : label.classList.remove('checked-text');
-
             await _supabase.from('travel_items').update({ is_checked: isChecked }).eq('id', id);
             updateProgress();
         }
 
         async function deleteItem(id, element) {
-            const { error } = await _supabase.from('travel_items').delete().eq('id', id);
-            if (!error) {
-                element.parentElement.remove();
-                updateProgress();
-            }
+            await _supabase.from('travel_items').delete().eq('id', id);
+            element.parentElement.remove();
+            updateProgress();
         }
 
         function updateProgress() {
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            const checked = document.querySelectorAll('input[type="checkbox"]:checked');
-            const percent = checkboxes.length === 0 ? 0 : Math.round((checked.length / checkboxes.length) * 100);
-            
+            const total = document.querySelectorAll('input[type="checkbox"]').length;
+            const checked = document.querySelectorAll('input[type="checkbox"]:checked').length;
+            const percent = total === 0 ? 0 : Math.round((checked / total) * 100);
             document.getElementById('progress-bar').style.width = percent + '%';
-            document.getElementById('progress-percent').innerText = `總體進度: ${percent}% (${checked.length}/${checkboxes.length})`;
+            document.getElementById('progress-percent').innerText = `目前進度：${percent}% (${checked}/${total})`;
         }
 
         function renderItemUI(listId, text, isChecked, id) {
             const list = document.getElementById(listId);
+            if (!list) return;
             const li = document.createElement('li');
-            li.innerHTML = `
-                <input type="checkbox" id="item-${id}" ${isChecked ? 'checked' : ''} onchange="toggleCheck(${id}, this.checked)">
-                <label for="item-${id}" class="${isChecked ? 'checked-text' : ''}">${text}</label>
-                <span class="delete-btn" onclick="deleteItem(${id}, this)">×</span>
-            `;
+            li.innerHTML = `<input type="checkbox" id="item-${id}" ${isChecked ? 'checked' : ''} onchange="toggleCheck(${id}, this.checked)">
+                <label for="item-${id}" class="${isChecked ? 'checked-text' : ''}" style="margin-left:10px">${text}</label>
+                <span class="delete-btn" onclick="deleteItem(${id}, this)">🗑️</span>`;
             list.appendChild(li);
+        }
+
+        // 5. 天氣查詢功能
+        async function getWeather() {
+            const city = document.getElementById('city-input').value;
+            const resDiv = document.getElementById('weather-result');
+            if (!city) return;
+            resDiv.innerText = "查詢中...";
+
+            try {
+                // 先用地理編碼找座標
+                const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`);
+                const geoData = await geoRes.json();
+                if (!geoData.results) throw new Error("找不到城市");
+
+                const { latitude, longitude, name } = geoData.results[0];
+                const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min&timezone=auto`);
+                const wData = await weatherRes.json();
+
+                const maxTemp = Math.max(...wData.daily.temperature_2m_max);
+                const minTemp = Math.min(...wData.daily.temperature_2m_min);
+                
+                let advice = "";
+                if (minTemp < 10) advice = "❄️ 天氣寒冷，必備厚大衣、保暖發熱衣、圍巾。";
+                else if (minTemp < 20) advice = "🍂 涼爽微冷，建議洋蔥式穿法，薄外套必備。";
+                else advice = "☀️ 天氣炎熱，穿著輕便透氣衣物，注意曬。";
+
+                resDiv.innerHTML = `<strong>📍 ${name} 未來一週溫度：</strong> ${minTemp}°C ~ ${maxTemp}°C <br> <strong>💡 穿著建議：</strong> ${advice}`;
+            } catch (e) {
+                resDiv.innerText = "查詢失敗，請輸入英文城市名試試看！";
+            }
         }
     </script>
 </body>
