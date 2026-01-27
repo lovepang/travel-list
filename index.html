@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>旅遊完整打包清單</title>
+    <title>旅遊雲端打包清單</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --primary-color: #4a90e2;
@@ -59,11 +60,8 @@
             border-radius: 4px;
             cursor: pointer;
         }
-        button.add-btn:hover { background-color: #357abd; }
-        ul {
-            list-style: none;
-            padding: 0;
-        }
+        button.add-btn:active { transform: scale(0.98); }
+        ul { list-style: none; padding: 0; }
         li {
             display: flex;
             align-items: center;
@@ -75,94 +73,151 @@
             cursor: pointer;
             margin-left: 8px;
         }
-        li input[type="checkbox"]:checked + label {
-            text-decoration: line-through;
-            color: #888;
-        }
         .delete-btn {
             color: #ff4d4f;
             cursor: pointer;
             font-weight: bold;
             padding: 0 5px;
+            margin-left: 10px;
+        }
+        /* 勾選後的樣式 */
+        .checked-text {
+            text-decoration: line-through;
+            color: #888;
         }
     </style>
 </head>
 <body>
 
-    <h1>🌍 旅遊完整打包清單</h1>
+    <h1>🌍 旅遊雲端打包清單</h1>
 
     <div class="container">
-        <div class="category-card" id="cat-1">
+        <div class="category-card">
             <h2>1. 重要文件與金融</h2>
             <div class="input-group">
-                <input type="text" placeholder="新增項目..." onkeypress="handleKeyPress(event, 'list-1')">
+                <input type="text" placeholder="新增項目..." id="input-list-1" onkeypress="handleKeyPress(event, 'list-1')">
                 <button class="add-btn" onclick="addItem('list-1')">新增</button>
             </div>
-            <ul id="list-1">
-                <li><input type="checkbox" id="item-p1"><label for="item-p1">護照/簽證</label><span class="delete-btn" onclick="this.parentElement.remove()">×</span></li>
-                <li><input type="checkbox" id="item-p2"><label for="item-p2">外幣現金/信用卡</label><span class="delete-btn" onclick="this.parentElement.remove()">×</span></li>
-            </ul>
+            <ul id="list-1"></ul>
         </div>
 
-        <div class="category-card" id="cat-2">
+        <div class="category-card">
             <h2>2. 衣物</h2>
             <div class="input-group">
-                <input type="text" placeholder="新增項目..." onkeypress="handleKeyPress(event, 'list-2')">
+                <input type="text" placeholder="新增項目..." id="input-list-2" onkeypress="handleKeyPress(event, 'list-2')">
                 <button class="add-btn" onclick="addItem('list-2')">新增</button>
             </div>
-            <ul id="list-2">
-                <li><input type="checkbox" id="item-c1"><label for="item-c1">換洗衣物</label><span class="delete-btn" onclick="this.parentElement.remove()">×</span></li>
-            </ul>
+            <ul id="list-2"></ul>
         </div>
 
-        <div class="category-card" id="cat-3">
+        <div class="category-card">
             <h2>3. 個人護理與藥品</h2>
             <div class="input-group">
-                <input type="text" placeholder="新增項目..." onkeypress="handleKeyPress(event, 'list-3')">
+                <input type="text" placeholder="新增項目..." id="input-list-3" onkeypress="handleKeyPress(event, 'list-3')">
                 <button class="add-btn" onclick="addItem('list-3')">新增</button>
             </div>
-            <ul id="list-3">
-                <li><input type="checkbox" id="item-m1"><label for="item-m1">常備藥品</label><span class="delete-btn" onclick="this.parentElement.remove()">×</span></li>
-            </ul>
+            <ul id="list-3"></ul>
         </div>
 
-        <div class="category-card" id="cat-4">
+        <div class="category-card">
             <h2>4. 數位電子與雜項</h2>
             <div class="input-group">
-                <input type="text" placeholder="新增項目..." onkeypress="handleKeyPress(event, 'list-4')">
+                <input type="text" placeholder="新增項目..." id="input-list-4" onkeypress="handleKeyPress(event, 'list-4')">
                 <button class="add-btn" onclick="addItem('list-4')">新增</button>
             </div>
-            <ul id="list-4">
-                <li><input type="checkbox" id="item-e1"><label for="item-e1">充電線/行動電源</label><span class="delete-btn" onclick="this.parentElement.remove()">×</span></li>
-            </ul>
+            <ul id="list-4"></ul>
         </div>
     </div>
 
     <script>
-        function addItem(listId) {
-            const list = document.getElementById(listId);
-            const input = list.previousElementSibling.querySelector('input');
+        // --- 1. Supabase 初始化設定 ---
+        const SUPABASE_URL = 'https://kxxoeebaldjusbberimg.supabase.co'; // 請替換
+        const SUPABASE_KEY = 'sb_publishable_y4SlLCg7DR5AnBzEkNUS-A_vIynlv5C'; // 請替換
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- 2. 網頁開啟時讀取資料 ---
+        window.onload = async () => {
+            const { data, error } = await _supabase
+                .from('travel_items')
+                .select('*')
+                .order('id', { ascending: true });
+
+            if (error) console.error('讀取失敗:', error);
+            if (data) {
+                data.forEach(item => {
+                    renderItemUI(item.category, item.content, item.is_checked, item.id);
+                });
+            }
+        };
+
+        // --- 3. 新增邏輯 ---
+        async function addItem(listId) {
+            const input = document.getElementById('input-' + listId);
             const text = input.value.trim();
-            
             if (text === "") return;
 
+            // 存入 Supabase
+            const { data, error } = await _supabase
+                .from('travel_items')
+                .insert([{ category: listId, content: text, is_checked: false }])
+                .select();
+
+            if (error) {
+                alert('新增失敗，請檢查資料表設定');
+                console.error(error);
+            } else {
+                renderItemUI(listId, text, false, data[0].id);
+                input.value = "";
+            }
+        }
+
+        // --- 4. 更新勾選狀態 ---
+        async function toggleCheck(id, isChecked) {
+            const label = document.querySelector(`label[for="item-${id}"]`);
+            if (isChecked) {
+                label.classList.add('checked-text');
+            } else {
+                label.classList.remove('checked-text');
+            }
+
+            const { error } = await _supabase
+                .from('travel_items')
+                .update({ is_checked: isChecked })
+                .eq('id', id);
+            
+            if (error) console.error('更新失敗:', error);
+        }
+
+        // --- 5. 刪除邏輯 ---
+        async function deleteItem(id, element) {
+            const { error } = await _supabase
+                .from('travel_items')
+                .delete()
+                .eq('id', id);
+
+            if (!error) {
+                element.parentElement.remove();
+            } else {
+                console.error('刪除失敗:', error);
+            }
+        }
+
+        // --- 輔助：渲染畫面 ---
+        function renderItemUI(listId, text, isChecked, id) {
+            const list = document.getElementById(listId);
             const li = document.createElement('li');
-            const itemId = 'item-' + Date.now();
             
             li.innerHTML = `
-                <input type="checkbox" id="${itemId}">
-                <label for="${itemId}">${text}</label>
-                <span class="delete-btn" onclick="this.parentElement.remove()">×</span>
+                <input type="checkbox" id="item-${id}" ${isChecked ? 'checked' : ''} 
+                       onchange="toggleCheck(${id}, this.checked)">
+                <label for="item-${id}" class="${isChecked ? 'checked-text' : ''}">${text}</label>
+                <span class="delete-btn" onclick="deleteItem(${id}, this)">×</span>
             `;
-            
             list.appendChild(li);
-            input.value = ""; // 清空輸入框
         }
 
         function handleKeyPress(event, listId) {
-            if (event.key === "Enter") {
-                addItem(listId);
-            }
+            if (event.key === "Enter") addItem(listId);
         }
     </script>
 </body>
