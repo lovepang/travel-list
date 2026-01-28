@@ -3,89 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✈️ 漫步雲端 - 旅遊助手</title>
+    <title>✈️ 漫步雲端 - 旅遊打包清單</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+TC:wght@300;500;700&display=swap');
-
-        :root {
-            --primary: #5d9ead;
-            --accent: #d98c5f;
-            --shopping-bg: #fffbf2;
-            --white: rgba(255, 255, 255, 0.92);
+        
+        :root { 
+            --primary: #5d9ead; 
+            --accent: #e67e22; 
+            --shopping-bg: #fffbf2; 
+            --white: rgba(255, 255, 255, 0.94); 
         }
 
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), 
-                        url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80');
-            background-size: cover; background-attachment: fixed; background-position: center;
-            margin: 0; padding: 20px; color: #2c3e50; min-height: 100vh;
+        body { 
+            font-family: 'Noto Sans TC', sans-serif; 
+            background-color: #f4f1ea;
+            /* ✨ 更換為旅遊卡通風格背景 ✨ */
+            background-image: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.1)), url('https://images.unsplash.com/photo-1530789252389-121cd4387371?auto=format&fit=crop&w=1920&q=80'); 
+            background-size: cover; 
+            background-attachment: fixed; 
+            background-position: center; 
+            margin: 0; padding: 20px; color: #2c3e50; min-height: 100vh; 
         }
 
-        /* 標題與使用者區 */
-        .header {
-            text-align: center; max-width: 900px; margin: 0 auto 30px;
-            background: var(--white); padding: 40px 20px; border-radius: 5px;
-            box-shadow: 10px 10px 0px var(--primary); border: 2px solid #eee; position: relative;
+        .header { 
+            text-align: center; max-width: 900px; margin: 0 auto 30px; 
+            background: var(--white); padding: 45px 25px; border-radius: 12px; 
+            box-shadow: 15px 15px 0px var(--primary); border: 1px solid #ddd; 
         }
 
-        #display-user { font-size: 3.5rem; color: var(--accent); font-family: 'Ma Shan Zheng', cursive; margin: 0; }
-
-        .user-select { padding: 10px 20px; border: 2px solid var(--primary); background: transparent; color: var(--primary); font-weight: bold; cursor: pointer; }
-
-        /* 天氣助手區塊 */
-        .weather-box {
-            background: rgba(255,255,255,0.7); border-radius: 10px; padding: 20px;
-            margin: 20px 0; border: 1px dashed var(--primary); text-align: left;
+        #display-user { 
+            font-size: 5rem; color: var(--accent); font-family: 'Ma Shan Zheng', cursive; margin: 0; 
+            text-shadow: 4px 4px 0px rgba(93, 158, 173, 0.2); letter-spacing: 10px; line-height: 1; margin-bottom: 5px;
         }
-        .search-bar { display: flex; gap: 10px; margin-bottom: 10px; }
-        .search-bar input { flex: 1; border: none; padding: 12px; border-bottom: 2px solid var(--primary); background: transparent; outline: none; }
-        .location-tag { font-size: 0.8rem; color: var(--primary); margin-bottom: 10px; display: inline-block; background: #e0f2f1; padding: 2px 8px; border-radius: 4px; }
 
-        /* 卡片設計 */
+        /* ✨ 加大後的標題樣式 ✨ */
+        .sub-title { 
+            letter-spacing: 4px; 
+            color: #5d9ead; 
+            font-weight: 700; 
+            font-size: 2.2rem; 
+            margin-bottom: 25px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .user-select { padding: 10px 20px; border: 2px solid var(--primary); background: #fff; color: var(--primary); font-weight: bold; cursor: pointer; border-radius: 20px; font-size: 1rem; margin-top: 10px; }
+
+        .progress-wrap { width: 80%; height: 16px; background: #e0e0e0; margin: 25px auto 10px; border-radius: 20px; overflow: hidden; border: 2px solid #fff; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1); }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #5d9ead, #a8dadc, #5d9ead); background-size: 200% 100%; animation: move-stripe 3s linear infinite; width: 0%; transition: width 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
+
+        @keyframes move-stripe { 0% { background-position: 0 0; } 100% { background-position: 100% 0; } }
+
+        .weather-box { background: rgba(255,255,255,0.92); border-radius: 15px; padding: 20px; margin: 20px 0; border: 2px solid #fff; text-align: left; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .location-tag { font-size: 0.9rem; font-weight: bold; color: #fff; background: var(--primary); padding: 4px 12px; border-radius: 50px; display: inline-block; margin-bottom: 12px; }
+        .search-bar { display: flex; gap: 8px; margin-bottom: 15px; }
+        .search-bar input { flex: 1; border: 2px solid #eee; padding: 12px; border-radius: 8px; outline: none; }
+        .temp-range { font-size: 1.8rem; font-weight: 700; color: var(--primary); }
+        .advice-box { background: #fff; padding: 15px; border-radius: 10px; border-left: 5px solid var(--accent); margin-top: 10px; line-height: 1.6; }
+
         .container { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; width: 100%; max-width: 1200px; margin: 0 auto; }
-        .category-card { background: var(--white); padding: 25px; border-radius: 2px; box-shadow: 5px 5px 15px rgba(0,0,0,0.1); border-top: 5px solid var(--primary); }
+        .category-card { background: var(--white); padding: 25px; border-radius: 8px; box-shadow: 5px 5px 15px rgba(0,0,0,0.1); border-top: 6px solid var(--primary); }
+        .shopping-section { grid-column: 1 / -1; margin-top: 40px; background: var(--shopping-bg); border: 3px solid var(--accent); border-radius: 20px; }
         
-        .shopping-section { grid-column: 1 / -1; margin-top: 40px; background: var(--shopping-bg); border: 3px solid var(--accent); border-radius: 15px; padding: 30px; }
-
-        h2 { font-size: 1.25rem; margin: 0 0 15px; border-bottom: 1px solid #ddd; padding-bottom: 10px; display: flex; align-items: center; gap: 10px; }
-        .input-group { display: flex; margin-bottom: 20px; }
-        input[type="text"] { flex: 1; padding: 10px; border: 1px solid #eee; }
-        .add-btn { background: var(--primary); color: white; border: none; padding: 10px 20px; cursor: pointer; }
-        
-        ul { list-style: none; padding: 0; }
-        li { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f1f1; }
-        .delete-btn { color: #ddd; cursor: pointer; margin-left: auto; font-size: 0.8rem; }
-        .checked-text { text-decoration: line-through; color: #ccc; }
-
-        .progress-wrap { width: 100%; height: 6px; background: #eee; margin: 20px 0; border-radius: 10px; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--accent); transition: 0.5s; width: 0%; }
+        .add-btn { background: var(--primary); color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; font-weight: bold; }
+        ul { list-style: none; padding: 0; min-height: 60px; }
+        li { display: flex; align-items: center; padding: 14px 0; border-bottom: 1px dashed #eee; cursor: grab; }
+        .checked-text { text-decoration: line-through; color: #bbb; }
+        .delete-btn { color: #ccc; cursor: pointer; margin-left: auto; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <span id="display-user">Tony</span>
-        <h3 style="letter-spacing: 5px; color: #888;">TRAVEL CHECKLIST</h3>
-        
+        <div class="sub-title">旅遊打包清單</div>
         <select class="user-select" onchange="switchUser(this.value)" id="user-dropdown">
-            <option value="Tony">身分：Tony</option>
-            <option value="Amy">身分：Amy</option>
+            <option value="Tony">Explorer: Tony</option>
+            <option value="Amy">Explorer: Amy</option>
+            <option value="Lucky">Explorer: Lucky</option>
+            <option value="Cindy">Explorer: Cindy</option>
         </select>
-
         <div class="progress-wrap"><div class="progress-fill" id="progress-fill"></div></div>
-        <div id="progress-percent" style="font-size: 0.8rem; color: var(--primary);">打包進度：0%</div>
+        <div id="progress-percent" style="font-weight:bold; color:var(--primary)">0% 打包完成</div>
 
         <div class="weather-box">
-            <div id="location-status" class="location-tag">🛰️ 正在定位您的目前位置...</div>
+            <div id="location-status" class="location-tag">🛰️ 位置探測中...</div>
             <div class="search-bar">
-                <input type="text" id="city-input" placeholder="手動搜尋目的地 (如：巴黎、Tokyo)">
-                <button class="add-btn" onclick="getWeather()">搜尋</button>
+                <input type="text" id="city-input" placeholder="要去哪個城市冒險？">
+                <button class="add-btn" onclick="searchWeather()">查看天氣</button>
             </div>
-            <div id="weather-display" class="weather-info">
-                <small style="color:#999">允許定位權限，我將為您提供即時天氣...</small>
-            </div>
+            <div id="weather-display" class="weather-info">請輸入城市以查看專屬穿搭建議...</div>
         </div>
     </div>
 
@@ -95,14 +103,10 @@
         <div class="category-card"><h2>🧴 個人護理與藥品</h2><div class="input-group"><input type="text" id="input-list-3"><button class="add-btn" onclick="addItem('list-3')">＋</button></div><ul id="list-3"></ul></div>
         <div class="category-card"><h2>🔌 數位電子與雜項</h2><div class="input-group"><input type="text" id="input-list-4"><button class="add-btn" onclick="addItem('list-4')">＋</button></div><ul id="list-4"></ul></div>
         <div class="category-card"><h2>🧳 收納與其他配件</h2><div class="input-group"><input type="text" id="input-list-6"><button class="add-btn" onclick="addItem('list-6')">＋</button></div><ul id="list-6"></ul></div>
-
         <div class="category-card shopping-section">
-            <h2 style="color: var(--accent)">🛍️ 當地採購清單</h2>
-            <div class="input-group">
-                <input type="text" id="input-list-5" placeholder="想買什麼？例如：藥妝、紀念品...">
-                <button class="add-btn" style="background:var(--accent)" onclick="addItem('list-5')">加入</button>
-            </div>
-            <ul id="list-5" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px;"></ul>
+            <h2 style="color: var(--accent)">🛍️ 當地採購任務</h2>
+            <div class="input-group"><input type="text" id="input-list-5" placeholder="想買什麼紀念品呢？"><button class="add-btn" style="background:var(--accent)" onclick="addItem('list-5')">加入清單</button></div>
+            <ul id="list-5" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px;"></ul>
         </div>
     </div>
 
@@ -110,104 +114,104 @@
         const SUPABASE_URL = 'https://kxxoeebaldjusbberimg.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_y4SlLCg7DR5AnBzEkNUS-A_vIynlv5C';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
         const urlParams = new URLSearchParams(window.location.search);
         const currentUser = urlParams.get('user') || 'Tony';
         document.getElementById('display-user').innerText = currentUser;
         document.getElementById('user-dropdown').value = currentUser;
 
-        window.onload = () => {
-            loadData();
-            autoDetectLocation(); // 啟動自動定位
-        };
-
+        window.onload = () => { loadData(); autoDetectLocation(); initDragAndDrop(); };
         function switchUser(val) { window.location.href = `?user=${val}`; }
 
-        // --- 核心定位功能 ---
-        function autoDetectLocation() {
-            const status = document.getElementById('location-status');
-            if (!navigator.geolocation) {
-                status.innerText = "❌ 您的瀏覽器不支援定位";
-                return;
-            }
+        const weatherMap = { 0: "晴朗", 1: "晴時多雲", 2: "多雲", 3: "陰天", 45: "霧", 51: "毛毛雨", 61: "小雨", 63: "中雨", 65: "大雨", 80: "陣雨", 95: "雷陣雨" };
 
+        async function searchWeather() {
+            const city = document.getElementById('city-input').value;
+            if (!city) return;
+            const geo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=zh&format=json`);
+            const data = await geo.json();
+            if (data.results) {
+                const res = data.results[0];
+                fetchFullWeather(res.latitude, res.longitude, res.name);
+            }
+        }
+
+        async function fetchFullWeather(lat, lon, name) {
+            const display = document.getElementById('weather-display');
+            document.getElementById('location-status').innerText = `🌍 冒險地點：${name}`;
+            try {
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`);
+                const data = await res.json();
+                const minT = data.daily.temperature_2m_min[0];
+                const maxT = data.daily.temperature_2m_max[0];
+                const cond = weatherMap[data.daily.weathercode[0]] || "多雲";
+                
+                let advice = "";
+                if (minT < 0) {
+                    advice = "🧊 **0°C以下 (極地)**：重裝備！厚羽絨、發熱衣(極暖)、毛內裡褲、毛帽手套、防滑靴。";
+                } else if (minT >= 0 && minT < 5) {
+                    advice = "❄️ **0~5°C (寒冷)**：厚羽絨 + 羊毛衫 + 發熱衣。圍巾與暖暖包必備。";
+                } else if (minT >= 5 && minT < 10) {
+                    advice = "🧥 **5~10°C (冬日)**：防風大衣 + 發熱衣 + 毛衣，採洋蔥式穿法。";
+                } else if (minT >= 10 && minT < 18) {
+                    advice = "🧣 **10~18°C (涼爽)**：輕羽絨或風衣 + 長袖上衣。注意早晚溫差。";
+                } else if (minT >= 18 && minT < 24) {
+                    advice = "👕 **18~24°C (舒適)**：薄外套 + 短袖或長袖薄襯衫。";
+                } else {
+                    advice = "☀️ **24°C以上 (炎熱)**：輕便透氣、抗UV衣物，注意防曬補水。";
+                }
+                if ([61, 63, 65, 80, 95].includes(data.daily.weathercode[0])) advice += " ☔ **雨天提醒：記得帶傘！**";
+
+                display.innerHTML = `<div class="temp-range">${minT}°C ~ ${maxT}°C <span style="font-size:1rem; color:#888">(${cond})</span></div><div class="advice-box"><strong>💡 專業穿著建議：</strong><br>${advice}</div>`;
+            } catch (e) { display.innerText = "氣象獲取失敗"; }
+        }
+
+        function autoDetectLocation() {
+            if (!navigator.geolocation) return;
             navigator.geolocation.getCurrentPosition(async (pos) => {
-                const lat = pos.coords.latitude;
-                const lon = pos.coords.longitude;
-                status.innerText = "📍 定位成功，正在獲取天氣...";
-                fetchWeather(lat, lon, "目前位置");
-            }, (err) => {
-                status.innerText = "ℹ️ 定位未開啟，您可以手動輸入城市";
+                const { latitude: lat, longitude: lon } = pos.coords;
+                const geo = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=zh`);
+                const geoData = await geo.json();
+                fetchFullWeather(lat, lon, geoData.city || "目前位置");
             });
         }
 
-        async function fetchWeather(lat, lon, cityName) {
-            const display = document.getElementById('weather-display');
-            try {
-                // 如果是自動定位，順便反查地名 (使用 BigDataCloud 免費 API)
-                let finalName = cityName;
-                if (cityName === "目前位置") {
-                    const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=zh`);
-                    const geoData = await geoRes.json();
-                    finalName = geoData.city || geoData.locality || "目前位置";
-                }
-
-                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`);
-                const data = await res.json();
-                
-                const minT = data.daily.temperature_2m_min[0];
-                const maxT = data.daily.temperature_2m_max[0];
-                let advice = minT < 12 ? "🧥 冷！發熱衣+大衣。" : minT < 20 ? "🧣 涼。長袖+薄外套。" : "☀️ 熱。短袖防曬。";
-                
-                display.innerHTML = `<div><b style="color:var(--primary)">📍 ${finalName}</b>：${minT}~${maxT}°C <br><small>${advice}</small></div>`;
-                document.getElementById('location-status').innerText = `🌍 偵測到您在：${finalName}`;
-            } catch (e) {
-                display.innerText = "天氣載入失敗";
-            }
+        function initDragAndDrop() {
+            document.querySelectorAll('ul').forEach(el => {
+                new Sortable(el, { group: 'travel-items', animation: 150, onEnd: async (evt) => {
+                    const itemId = evt.item.querySelector('input').id.replace('item-', '');
+                    await _supabase.from('travel_items').update({ category: evt.to.id }).eq('id', itemId);
+                    updateProgress();
+                }});
+            });
         }
 
-        async function getWeather() {
-            const city = document.getElementById('city-input').value;
-            if (!city) return;
-            try {
-                const geo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=zh&format=json`);
-                const data = await geo.json();
-                if (data.results) fetchWeather(data.results[0].latitude, data.results[0].longitude, data.results[0].name);
-            } catch (e) { alert("找不到該城市"); }
-        }
-
-        // --- Supabase 資料處理 (同前) ---
         async function loadData() {
             document.querySelectorAll('ul').forEach(el => el.innerHTML = '');
             const { data } = await _supabase.from('travel_items').select('*').eq('user_name', currentUser).order('id', { ascending: true });
             if (data) { data.forEach(item => renderItemUI(item.category, item.content, item.is_checked, item.id)); updateProgress(); }
         }
+
         async function addItem(listId) {
             const input = document.getElementById('input-' + listId);
-            const text = input.value.trim();
-            if (!text) return;
+            const text = input.value.trim(); if (!text) return;
             const { data } = await _supabase.from('travel_items').insert([{ category: listId, content: text, is_checked: false, user_name: currentUser }]).select();
             if (data) { renderItemUI(listId, text, false, data[0].id); input.value = ""; updateProgress(); }
         }
-        async function toggleCheck(id, isChecked) {
-            await _supabase.from('travel_items').update({ is_checked: isChecked }).eq('id', id);
-            updateProgress();
-        }
-        async function deleteItem(id, element) {
-            await _supabase.from('travel_items').delete().eq('id', id);
-            element.parentElement.remove();
-            updateProgress();
-        }
+
+        async function toggleCheck(id, isChecked) { await _supabase.from('travel_items').update({ is_checked: isChecked }).eq('id', id); updateProgress(); }
+
+        async function deleteItem(id, element) { await _supabase.from('travel_items').delete().eq('id', id); element.parentElement.remove(); updateProgress(); }
+
         function updateProgress() {
             const total = document.querySelectorAll('input[type="checkbox"]').length;
             const checked = document.querySelectorAll('input[type="checkbox"]:checked').length;
             const percent = total === 0 ? 0 : Math.round((checked / total) * 100);
             document.getElementById('progress-fill').style.width = percent + '%';
-            document.getElementById('progress-percent').innerText = `打包進度：${percent}% (${checked}/${total})`;
+            document.getElementById('progress-percent').innerText = `${percent}% 打包完成 (${checked}/${total})`;
         }
+
         function renderItemUI(listId, text, isChecked, id) {
-            const list = document.getElementById(listId);
-            if (!list) return;
+            const list = document.getElementById(listId); if (!list) return;
             const li = document.createElement('li');
             li.innerHTML = `<input type="checkbox" id="item-${id}" ${isChecked ? 'checked' : ''} onchange="toggleCheck(${id}, this.checked)">
                 <label for="item-${id}" class="${isChecked ? 'checked-text' : ''}" style="margin-left:15px; flex:1; cursor:pointer">${text}</label>
